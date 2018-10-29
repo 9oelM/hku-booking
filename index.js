@@ -1,15 +1,19 @@
 const puppeteer = require("puppeteer");
 const readline = require("readline");
 const read = require("read");
-const constants = require("./constants");
+const C = require("./constants");
 const chalk = require("chalk");
 const { log } = console;
 
 // array: [selector0, inputValue0, selector1, inputValue1, ...]
-async function insertLoginInfo(page, array) {
+async function insertInfo(page, array) {
   for (let i = 0; i < array.length / 2; i++) {
-    await page.focus(array[i * 2]);
-    page.type(array[i * 2 + 1]);
+    await page.evaluate((array, i) => {
+      console.log(
+        `${document.querySelector(array[i * 2]).value} = ${array[i * 2 + 1]}`
+      );
+      document.querySelector(array[i * 2]).value = array[i * 2 + 1];
+    }, array[i * 2 + 1]);
   }
 }
 
@@ -19,10 +23,13 @@ function readInput(option) {
       if (err) {
         reject(err);
       }
-      console.log(assignVarFrom);
       resolve(assignVarFrom);
     })
   );
+}
+
+function checkURL(page) {
+  log(chalk.bgBlue("Current URL: " + page.url()));
 }
 
 const start = async () => {
@@ -31,6 +38,7 @@ const start = async () => {
   Init
   
   */
+  log(chalk.bgGreen("Launching browser and page..."));
   const browser = await puppeteer.launch({ args: ["--disable-dev-shm-usage"] });
   const page = await browser.newPage();
   /*
@@ -38,38 +46,66 @@ const start = async () => {
   HKU LOGIN PART
   
   */
-  log(constants.get("HKU_LOGIN_LINK"));
-
-  log(constants.get("USERNAME"));
-
-  log(constants.get("PASSWORD"));
-
-  log(constants.get("LOGIN_BUTTON"));
-  await page.goto(constants.get("HKU_LOGIN_LINK"));
+  /*
+  1. Go onto HKU Portal Login Link that would redirect to booking system
+  */
+  await page.goto(C.get("HKU_LOGIN_LINK"));
+  checkURL(page);
+  /*
+  2. Receive user inputs for id and pw
+  */
+  let username = await readInput({
+    prompt: "Please enter your HKU Portal ID: "
+  });
+  let password = await readInput({
+    prompt: "Please enter your HKU Portal PIN: ",
+    silent: true
+  });
+  /*
+  3. Inject those info into the webpage
+  */
   await page.evaluate(
-    () => {
-      document.querySelector("#username").value = "yo1o";
-      document.querySelector("#password").value = "test";
+    ({ username, password }) => {
+      document.querySelector("#username").value = username;
+      document.querySelector("#password").value = password;
     },
-    "yo1o",
-    "test"
+    {
+      username,
+      password
+    }
   );
-
-  const username = await page.evaluate(
+  /*
+  4. Check info
+  */
+  const un = await page.evaluate(
     () => document.querySelector("#username").value
   );
-  const password = await page.evaluate(
+  const pw = await page.evaluate(
     () => document.querySelector("#password").value
   );
 
-  log(
-    chalk.green(`:: Value Check ::
-  username: ${username}
-  password: ${password}
-  `)
-  );
-  log(page.url());
-
+  if (!(un && pw)) {
+    // something's wrong
+    log(chalk.bgRed("You entered an invalid input. Please try again."));
+  } else {
+    log(chalk.bgGreen("Username and password check done. Good to go."));
+  }
+  /*
+  5. Click login button
+  */
+  await Promise.all([
+    page.click(C.get("LOGIN_BUTTON")),
+    page.waitForNavigation({ waitUntil: "domcontentloaded" })
+  ]);
+  /* 
+  6. wait until redirection
+  */
+  await page
+    .waitForSelector(".schedule_title", { timeout: 1000 * 10 })
+    // one of the selectors in the page (http://booking.its.hku.hk/lebook/book/Web/schedule.php)
+    .then(() => log(chalk.bgGreen("Page redirection successful")));
+  // await page.waitFor(6000);
+  checkURL(page);
   await browser.close();
 };
 

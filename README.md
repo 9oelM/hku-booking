@@ -1,18 +1,26 @@
+# HKU BOOKING
 
-     ,-----.,--.                  ,--. ,---.   ,--.,------.  ,------.
-    '  .--./|  | ,---. ,--.,--. ,-|  || o   \  |  ||  .-.  \ |  .---'
-    |  |    |  || .-. ||  ||  |' .-. |`..'  |  |  ||  |  \  :|  `--, 
-    '  '--'\|  |' '-' ''  ''  '\ `-' | .'  /   |  ||  '--'  /|  `---.
-     `-----'`--' `---'  `----'  `---'  `--'    `--'`-------' `------'
-    ----------------------------------------------------------------- 
+## What is it
+A script to easily and quickly book a seat in [Learning Commons @ HKU](http://www.les.hku.hk/teaching-learning/learning-space/booking-arrangement-of-learning-space). 
 
+## Usage
+```
+$ node index.js 
 
-Hi there! Welcome to Cloud9 IDE!
+$ Launching browser and page...
 
-To get you started, create some files, play with the terminal,
-or visit http://docs.c9.io for our documentation.
-If you want, you can also go watch some training videos at
-http://www.youtube.com/user/c9ide.
+$ Current URL: https://hkuportal.hku.hk/cas/servlet/edu.yale.its.tp.cas.servlet.Login?service=http://booking.its.hku.hk/lebook/book/Web/
 
-Happy coding!
-The Cloud9 IDE team
+$ Please enter your HKU Portal ID: yo1o
+
+$ Please enter your HKU Portal PIN: 
+
+$ Username and password check done. Good to go.
+
+$ Page redirection successful
+
+$ Current URL: http://booking.its.hku.hk/lebook/book/Web/schedule.php
+```
+
+## Stacks
+* [Puppeteer](https://github.com/GoogleChrome/puppeteer)
