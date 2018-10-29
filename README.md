@@ -1,4 +1,4 @@
-# HKU BOOKING
+# HKU BOOKING (:construction: still under development)
 
 ## What is it
 A script to easily and quickly book a seat in [Learning Commons @ HKU](http://www.les.hku.hk/teaching-learning/learning-space/booking-arrangement-of-learning-space). 
