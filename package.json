@@ -11,8 +11,10 @@
   "dependencies": {
     "chalk": "^2.4.1",
     "immutable": "^3.8.2",
-    "puppeteer": "^1.9.0",
-    "read": "^1.0.7"
+    "inquirer": "^6.2.0",
+    "ora": "^3.0.0",
+    "puppeteer": "^1.10.0",
+    "tabletojson": "^0.9.8"
   },
   "devDependencies": {
     "onchange": "^5.0.2",
