@@ -12,9 +12,11 @@
     "chalk": "^2.4.1",
     "immutable": "^3.8.2",
     "inquirer": "^6.2.0",
+    "jquery": "^3.3.1",
+    "jsdom": "^13.0.0",
     "ora": "^3.0.0",
     "puppeteer": "^1.10.0",
-    "tabletojson": "^0.9.8"
+    "table-to-json": "^0.13.0"
   },
   "devDependencies": {
     "onchange": "^5.0.2",
