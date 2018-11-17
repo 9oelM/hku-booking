@@ -1,11 +1,14 @@
-const { success, warning, info, safeRequire } = require("./helper");
 const puppeteer = require("puppeteer");
 const inquirer = require("inquirer");
 const ora = require("ora");
+const jsdom = require("jsdom");
+const { JSDOM } = jsdom;
 const C = require("./constants");
 const lib = require("./lib");
+const { success, warning, info, safeRequire } = require("./helper");
+const { log } = console;
 let creds = safeRequire(
-  "./credentials.js",
+  "./credentials",
   "Credentials.js was not found. You have to manually type in your username and password.",
   {}
 );
@@ -38,7 +41,7 @@ const askQs = () => {
 const checkURL = page => info("Current URL: " + page.url());
 
 const run = async () => {
-  if (!creds.username || !creds.password) {
+  if (!(creds.username && creds.password)) {
     const { USERNAME, PASSWORD } = await inquirer.prompt([
       {
         name: "USERNAME",
@@ -59,13 +62,15 @@ const run = async () => {
   }
 
   const spinner = ora().start();
-  spinner.info("Launching browser and page. If you have chrome, chrome will automatically launch and do things for you.");
+  spinner.info(
+    "Launching browser and page. If you have chrome, it will automatically launch and do things for you."
+  );
   const browser = await puppeteer.launch({
     headless: false,
     args: [
       "--no-sandbox",
       "--disable-setuid-sandbox",
-      "--disable-dev-shm-usage",
+      "--disable-dev-shm-usage"
     ]
   });
   const page = await browser.newPage();
@@ -81,13 +86,15 @@ const run = async () => {
   spinner.info("Attempting to log in...");
 
   await page.evaluate(
-    ({ username, password }) => {
-      document.querySelector("#username").value = username;
-      document.querySelector("#password").value = password;
+    ({ username, password, usernameSelector, passwordSelector }) => {
+      document.querySelector(usernameSelector).value = username;
+      document.querySelector(passwordSelector).value = password;
     },
     {
-      username: creds.username, 
-      password: creds.password 
+      username: creds.username,
+      password: creds.password,
+      usernameSelector: C.USERNAME,
+      passwordSelector: C.PASSWORD
     }
   );
 
@@ -100,8 +107,36 @@ const run = async () => {
     .waitForSelector(".schedule_title", { timeout: 1000 * 10 })
     // one of the selectors in the page (http://booking.its.hku.hk/lebook/book/Web/schedule.php)
     .then(() => spinner.succeed("Login successful!"));
-  // await page.waitFor(6000);
+
+  const table = await page.evaluate(
+    ({ reservationSelector }) =>
+      document.getElementById(reservationSelector).innerHTML,
+    { reservationSelector: C.RESERVATION }
+  );
+
+  const dom = new JSDOM(`<html><body>${table}</body></html>`, {
+    runScripts: "dangerously"
+  });
+  // Set window and document from jsdom
+  const { window } = dom;
+  const { document } = window;
+  const $ = (global.jQuery = require("jquery")(window));
+  require("table-to-json")
+
+  const rtable = $(".reservations");
+  log(rtable);
+  log($.fn.tableToJSON)
+  (jQuery &&
+    dom) ?
+    success("jQuery and virtual dom are successfully initialized.") : warning("jQuery and virtual dom are not successfully initialized.");
+  rtable ? success("Target table has been found.") : warning("Target table not found.")
+  $.fn.tableToJSON ? success("tableToJSON was successfully injected as jQuery plugin") : warning("tableToJSON was not successfully injected as jQuery plugin")
+
+  const tableInJson = $(".reservations").tableToJSON();
+  
+  log(tableInJson);
   checkURL(page);
+
   const answers = await askQs();
   const { CHOICE, ROOM, DATE, TIME } = answers;
   await browser.close();
