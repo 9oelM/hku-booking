@@ -4,5 +4,8 @@ module.exports= {
   USERNAME: "#username",
   PASSWORD: "#password",
   LOGIN_BUTTON:
-    "#round-corner-1 > div > form > table > tbody > tr:nth-child(1) > td:nth-child(2) > table > tbody > tr > td > input"
-}
+    "#round-corner-1 > div > form > table > tbody > tr:nth-child(1) > td:nth-child(2) > table > tbody > tr > td > input",
+  BOOKING_LINK: "http://booking.its.hku.hk/lebook/book/Web/schedule.php",
+  RESERVATION: "reservations"
+
+  }
